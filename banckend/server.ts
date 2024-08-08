@@ -32,7 +32,18 @@ app.post('/api/files', upload.single('file'), async (req, res) => {
 })
 
 app.get('/api/users', async (req, res) => {
-    return res.status(200).json({ data: [] });
+    const { q } = req.query
+    if (!q) {
+        return res.status(500).json({ message: "Query param `q` is required" }); 
+    }
+    if (Array.isArray(q)) {
+        return res.status(500).json({ message: "Query param `q` must be a string" }); 
+    }
+    const search = q.toString().toLowerCase()
+    const filteredData = userData.filter(row => {
+        Object.values(row).some(value => value.toLowerCase().includes(search))
+    })  
+    return res.status(200).json({ data: filteredData });
 })
 
 app.listen(port, () => {
